@@ -1,0 +1,19 @@
+# IDE
+/.vscode/
+/.idea/
+
+# Lib
+*.a
+*.so
+
+# Compilation
+*.o
+cmake-build-debug/
+build/
+
+# Unit Tests
+*.gcda
+*.gcno
+
+# Binaries
+/plazza
