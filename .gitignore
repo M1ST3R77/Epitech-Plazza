@@ -15,5 +15,8 @@ build/
 *.gcda
 *.gcno
 
+# script
+build.sh
+
 # Binaries
 /plazza
