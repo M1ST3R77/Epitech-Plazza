@@ -11,7 +11,7 @@ on:
     - 'ga-ignore-**'
 
 env:
-  EXECUTABLES: "plazza 2 5 2000"
+  EXECUTABLES: "plazza"
 
 jobs:
   check_program_compilation:
