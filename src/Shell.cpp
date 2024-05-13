@@ -43,6 +43,5 @@ plazza::Shell::Shell(int ac, char **av)
     while (1) {
         if (!std::getline(std::cin, input))
             break;
-        std::cout << "You write: " + input << std::endl;
     }
 }
