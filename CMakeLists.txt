@@ -11,7 +11,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
 
 set(SRC src/main.cpp
         src/Shell.cpp
-        includes/Exceptions.hpp
+        src/Exceptions.cpp
 )
 
 include_directories(includes)

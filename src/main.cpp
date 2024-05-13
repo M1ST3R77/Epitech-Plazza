@@ -9,14 +9,15 @@
 
 #include "Shell.hpp"
 #include "Exceptions.hpp"
+#include "define.hpp"
 
-int main(int ac, char **av)
+int main(int ac, char const *const *av)
 {
     try {
-        plazza::Shell shell(ac, av);
-    } catch (const std::exception &error) {
+        plazza::Shell shell(ac, std::vector<std::string_view>(av, av + ac));
+    } catch (const exceptions::Error &error) {
         std::cerr << error.what() << std::endl;
-        return 84;
+        return ERROR_RETURN;
     }
-    return 0;
+    return SUCCESS_RETURN;
 }

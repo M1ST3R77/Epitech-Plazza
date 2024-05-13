@@ -7,13 +7,16 @@
 
 #pragma once
 
+#include <vector>
+
 namespace plazza {
 
     class Shell {
         public:
-            Shell(int ac, char **av);
-            void parsing(int ac, char **av);
+            Shell(int ac, std::vector<std::string_view> av);
+            void parsing(int ac, std::vector<std::string_view> av);
             void help(void);
+            void help_parsing();
         private:
             float _Mult;
             int _NbCooks;
