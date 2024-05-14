@@ -7,8 +7,10 @@
 
 #pragma once
 
-#include <exception>
-#include <string>
+#include <iostream>
+
+#include "../src/Shell.hpp"
+#include "../src/Exceptions.hpp"
 
 #define ERROR_RETURN 84
 #define SUCCESS_RETURN 0

@@ -9,8 +9,10 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
         plazza
 )
 
-set(SRC src/main.cpp
+set(SRC src/Main.cpp
+        src/Shell.hpp
         src/Shell.cpp
+        src/Exceptions.hpp
         src/Exceptions.cpp
 )
 
