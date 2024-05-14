@@ -1,6 +1,5 @@
 # IDE
 /.vscode/
-/.idea/
 
 # Lib
 *.a
@@ -14,6 +13,9 @@ build/
 # Unit Tests
 *.gcda
 *.gcno
+
+# script
+build.sh
 
 # Binaries
 /plazza
