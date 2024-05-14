@@ -9,6 +9,9 @@
 
 #include <vector>
 
+#include "../Parsing/Parsing.hpp"
+#include "../Kitchen/Kitchen.hpp"
+
 namespace plazza {
     class Shell {
     public:
@@ -21,5 +24,6 @@ namespace plazza {
         double _mult{};
         int _nb_cooks{};
         int _time{};
+        std::vector<Process<Kitchen>> _kitchens{};
     };
 }

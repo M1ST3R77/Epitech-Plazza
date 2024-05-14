@@ -5,6 +5,8 @@
 ** Shell.cpp
 */
 
+#include <unistd.h>
+
 #include "Main.hpp"
 #include "../src/Parsing/Parsing.hpp"
 #include "Utils.hpp"
@@ -54,5 +56,7 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
                 parse._commands.clear();
             }
         }
+        if (cmd == "fork")
+            _kitchens.push_back(Process<Kitchen>());
     }
 }

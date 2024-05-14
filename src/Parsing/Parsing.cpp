@@ -12,8 +12,7 @@
 #include <utility>
 #include <sstream>
 
-void plazza::Parsing::setCmd(std::string cmd)
-{
+void plazza::Parsing::setCmd(std::string cmd) {
     _cmd = std::move(cmd);
 }
 
@@ -37,24 +36,20 @@ plazza::PizzaSize plazza::Parsing::getSize(const std::string &elem)
     return it->second;
 }
 
-int plazza::Parsing::getNumber(const std::string &elem)
-{
-    int number;
-
+int plazza::Parsing::getNumber(const std::string &elem) {
     if (elem.length() < 2)
         throw exceptions::ParsingError("Bad arguments");
     if (elem[0] != 'x')
         throw exceptions::ParsingError("Bad arguments");
-    number = str_to_int(elem.substr(1));
+    const int number = str_to_int(elem.substr(1));
     if (number <= 0)
         throw exceptions::ParsingError("Bad arguments");
     return number;
 }
 
-plazza::command_t plazza::Parsing::getElement(const std::string& cmd)
-{
+plazza::command_t plazza::Parsing::getElement(const std::string &cmd) {
     int cnt_elem = 0;
-    plazza::command_t final_cmd;
+    command_t final_cmd{};
     std::stringstream scmd(cmd);
     std::string elem;
 
@@ -82,8 +77,7 @@ plazza::command_t plazza::Parsing::getElement(const std::string& cmd)
     return final_cmd;
 }
 
-void plazza::Parsing::getCommand()
-{
+void plazza::Parsing::getCommand() {
     if (_cmd.empty())
         return;
 

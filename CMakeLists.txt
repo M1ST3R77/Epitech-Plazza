@@ -17,6 +17,10 @@ set(SRC src/Main.cpp
         src/Parsing/Parsing.cpp
         src/Parsing/Parsing.hpp
         src/Utils.cpp
+        src/Process/Process.cpp
+        src/Process/Process.hpp
+        src/Kitchen/Kitchen.cpp
+        src/Kitchen/Kitchen.hpp
 )
 
 include_directories(includes)
