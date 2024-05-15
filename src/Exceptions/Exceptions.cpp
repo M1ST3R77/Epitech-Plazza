@@ -18,3 +18,7 @@ const char *exceptions::Error::what() const noexcept {
 exceptions::ParamsError::ParamsError(const std::string &error) :
     Error(error + " ! Use \"plazza --help\" for more informations.") {
 }
+
+exceptions::ParsingError::ParsingError(const std::string &error) :
+    Error(error + " ! Use \"help\" in interactive shell for more informations.") {
+}

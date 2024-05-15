@@ -16,7 +16,7 @@ namespace plazza {
 
     private:
         void parsing(int ac, const std::vector<std::string_view> &av);
-        static void help_parsing();
+        static void helpParsing();
 
         double _mult{};
         int _nb_cooks{};

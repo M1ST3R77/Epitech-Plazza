@@ -25,4 +25,9 @@ namespace exceptions {
     public:
         explicit ParamsError(const std::string &error);
     };
+
+    class ParsingError final : public Error {
+    public:
+        explicit ParsingError(const std::string &error);
+    };
 }
