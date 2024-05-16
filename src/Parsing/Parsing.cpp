@@ -19,8 +19,9 @@ void plazza::Parsing::setCmd(std::string cmd)
 
 plazza::PizzaType plazza::Parsing::getPizza(const std::string &elem)
 {
-    auto it = types.find(str_to_lower(elem));
+    std::unordered_map<std::string, PizzaType>::iterator it;
 
+    it = types.find(str_to_lower(elem));
     if (it == types.end())
         throw exceptions::ParsingError("Bad arguments");
     return it->second;
@@ -28,8 +29,9 @@ plazza::PizzaType plazza::Parsing::getPizza(const std::string &elem)
 
 plazza::PizzaSize plazza::Parsing::getSize(const std::string &elem)
 {
-    auto it = sizes.find(elem);
+    std::unordered_map<std::string, PizzaSize>::iterator it;
 
+    it = sizes.find(elem);
     if (it == sizes.end())
         throw exceptions::ParsingError("Bad arguments");
     return it->second;
