@@ -24,5 +24,5 @@ exceptions::ParsingError::ParsingError(const std::string &error) :
 }
 
 exceptions::ProcessError::ProcessError(const std::string &error) :
-    Error("Can't proceed with kitchens : " + error) {
+    Error("Can't proceed with kitchen : " + error) {
 }

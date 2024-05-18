@@ -5,12 +5,12 @@
 ** Parsing.hpp
 */
 
+#include <utility>
+#include <sstream>
+
 #include "Parsing.hpp"
 #include "../src/Exceptions/Exceptions.hpp"
 #include "Utils.hpp"
-
-#include <utility>
-#include <sstream>
 
 void plazza::Parsing::setCmd(std::string cmd) {
     _cmd = std::move(cmd);

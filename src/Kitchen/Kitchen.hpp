@@ -7,15 +7,16 @@
 
 #pragma once
 
-#include <unistd.h>
+#include "../IPC/IPC.hpp"
 
 namespace plazza {
     class Kitchen {
     public:
-        Kitchen();
+        Kitchen(double mult, int nb_cooks, int restock_time, std::pair<IPC, IPC> &ipcs);
 
         ~Kitchen();
 
-    private:
+        std::pair<IPC, IPC> &_ipcs;
+        int _nb_cooks;
     };
 } // plazza

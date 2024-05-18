@@ -7,10 +7,8 @@
 
 #pragma once
 
-#include <vector>
-
 #include "../Parsing/Parsing.hpp"
-#include "../Kitchen/Kitchen.hpp"
+#include "../Process/ProcessPool.hpp"
 
 namespace plazza {
     class Shell {
@@ -20,10 +18,12 @@ namespace plazza {
     private:
         void parsing(int ac, const std::vector<std::string_view> &av);
         static void helpParsing();
+        std::pair<IPC, IPC> &getLeastBusyKitchen();
+        void givePizza(PizzaType type, PizzaSize size);
 
         double _mult{};
         int _nb_cooks{};
-        int _time{};
-        std::vector<Process<Kitchen>> _kitchens{};
+        int _restock_time{};
+        ProcessPool _kitchens{};
     };
 }

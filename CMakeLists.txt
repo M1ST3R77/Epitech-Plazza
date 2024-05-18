@@ -16,11 +16,16 @@ set(SRC src/Main.cpp
         src/Exceptions/Exceptions.cpp
         src/Parsing/Parsing.cpp
         src/Parsing/Parsing.hpp
+        includes/Command.hpp
+        includes/Utils.hpp
         src/Utils.cpp
-        src/Process/Process.cpp
-        src/Process/Process.hpp
         src/Kitchen/Kitchen.cpp
         src/Kitchen/Kitchen.hpp
+        src/Process/ProcessPool.cpp
+        src/Process/ProcessPool.hpp
+        src/IPC/IPC.cpp
+        src/IPC/IPC.hpp
+        includes/IPizza.hpp
 )
 
 include_directories(includes)
