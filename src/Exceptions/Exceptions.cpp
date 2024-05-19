@@ -22,3 +22,7 @@ exceptions::ParamsError::ParamsError(const std::string &error) :
 exceptions::ParsingError::ParsingError(const std::string &error) :
     Error(error + " ! Use \"help\" in interactive shell for more informations.") {
 }
+
+exceptions::ProcessError::ProcessError(const std::string &error) :
+    Error("Can't proceed with kitchen : " + error) {
+}
