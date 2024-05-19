@@ -19,8 +19,15 @@ namespace plazza {
 
         ~Kitchen();
 
+    private:
+        void cooker(double mult);
+        void ingredient_filler(int restock_time);
+
         std::pair<IPC, IPC> &_ipcs;
-        int _nb_cooks;
-        std::vector<std::unique_ptr<IPizza>> orders;
+        std::vector<std::shared_ptr<IPizza>> orders{};
+        std::vector<std::shared_ptr<IPizza>> cooking{};
+        std::mutex order_mutex{};
+        std::mutex ingredients_mutex{};
+        std::vector<int> nb_ingredient;
     };
 } // plazza
