@@ -25,20 +25,20 @@ namespace plazza {
         XXL = 16
     };
 
-    inline std::unordered_map<std::string, plazza::PizzaSize> sizes
+    inline std::unordered_map<std::string, PizzaSize> sizes
         {{"S", S}, {"M", M},
          {"L", L}, {"XL", XL}, {"XXL", XXL}};
 
-    inline std::unordered_map<plazza::PizzaSize, std::string> revSizes
+    inline std::unordered_map<PizzaSize, std::string> revSizes
             {{S, "S"}, {M, "M"},
              {L, "L"}, {XL, "XL"}, {XXL, "XXL"}};
 
 
-    inline std::unordered_map<std::string, plazza::PizzaType> types
+    inline std::unordered_map<std::string, PizzaType> types
         {{"regina", Regina}, {"margarita", Margarita},
          {"americana", Americana}, {"fantasia", Fantasia}};
 
-    inline std::unordered_map<plazza::PizzaType, std::string> revTypes
+    inline std::unordered_map<PizzaType, std::string> revTypes
             {{Regina, "regina"}, {Margarita, "margarita"},
              {Americana, "americana"}, {Fantasia, "fantasia"}};
 
@@ -47,4 +47,9 @@ namespace plazza {
         PizzaSize size;
         int number;
     } command_t;
+
+    typedef struct pizza_s {
+        PizzaType pizza;
+        PizzaSize size;
+    } pizza_t;
 }

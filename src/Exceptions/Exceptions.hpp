@@ -30,4 +30,9 @@ namespace exceptions {
     public:
         explicit ParsingError(const std::string &error);
     };
+
+    class ProcessError final : public Error {
+    public:
+        explicit ProcessError(const std::string &error);
+    };
 }

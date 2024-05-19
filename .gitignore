@@ -17,3 +17,6 @@ build/
 # Binaries
 /plazza
 bonus_plazza
+
+# Log
+*.txt
