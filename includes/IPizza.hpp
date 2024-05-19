@@ -11,7 +11,16 @@
 
 namespace plazza {
     enum PizzaIngredient {
-
+        Dough = 0,
+        Tomato,
+        Gruyere,
+        Ham,
+        Mushrooms,
+        Steak,
+        EggPlant,
+        GoatCheese,
+        ChiefLove,
+        NbIngredients
     };
 
     class IPizza {
