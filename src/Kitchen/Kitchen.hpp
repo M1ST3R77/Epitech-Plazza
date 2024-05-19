@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <memory>
+
+#include "IPizza.hpp"
 #include "../IPC/IPC.hpp"
 
 namespace plazza {
@@ -18,5 +21,6 @@ namespace plazza {
 
         std::pair<IPC, IPC> &_ipcs;
         int _nb_cooks;
+        std::vector<std::unique_ptr<IPizza>> orders;
     };
 } // plazza

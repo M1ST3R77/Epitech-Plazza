@@ -45,14 +45,14 @@ std::pair<IPC, IPC> &plazza::Shell::getLeastBusyKitchen() {
     return min_cook->second;
 }
 
-void plazza::Shell::givePizza(PizzaType type, PizzaSize size) {
+void plazza::Shell::givePizza(const PizzaType type, const PizzaSize size) {
     auto &[kitchen_in, kitchen_out] = getLeastBusyKitchen();
     kitchen_out << std::string("new_pizza");
     std::string msg;
     kitchen_in >> msg;
     if (msg != "ready")
         throw exceptions::ProcessError("Unkown message received: " + msg);
-    kitchen_out << revTypes[type] + ' ' + revSizes[size];
+    kitchen_out << (pizza_t){type, size};
 }
 
 void plazza::Shell::parsing(const int ac, const std::vector<std::string_view> &av) {

@@ -47,4 +47,9 @@ namespace plazza {
         PizzaSize size;
         int number;
     } command_t;
+
+    typedef struct pizza_s {
+        PizzaType pizza;
+        PizzaSize size;
+    } pizza_t;
 }
