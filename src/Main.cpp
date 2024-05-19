@@ -7,6 +7,8 @@
 
 #include "Main.hpp"
 
+#include "Logger/Logger.hpp"
+
 int main(const int ac, char const *const *av) {
     if (ac == 2 && (std::string_view(av[1]) == "--help" || std::string_view(av[1]) == "-h")) {
         std::cout << "USAGE\n\t./plazza m c t\n\nDESCRIPTION\n"
@@ -16,7 +18,9 @@ int main(const int ac, char const *const *av) {
         return SUCCESS_RETURN;
     }
     try {
+        Logger::log("Plazza started.", Logger::Info);
         plazza::Shell shell(ac, std::vector<std::string_view>(av, av + ac));
+        Logger::log("Plazza end.", Logger::Info);
     } catch (const exceptions::Error &error) {
         std::cerr << error.what() << std::endl;
         return ERROR_RETURN;

@@ -40,6 +40,10 @@ set(SRC src/Main.cpp
         src/Pizza/Manager/PizzaFactory.hpp
         src/Pizza/Manager/PizzaPacker.cpp
         src/Pizza/Manager/PizzaPacker.hpp
+        src/Logger/Logger.cpp
+        src/Logger/Logger.hpp
+        src/ThreadPool/ThreadPool.cpp
+        src/ThreadPool/ThreadPool.hpp
 )
 
 include_directories(includes)

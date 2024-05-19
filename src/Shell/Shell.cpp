@@ -12,6 +12,7 @@
 #include "Utils.hpp"
 #include "../IPC/IPC.hpp"
 #include "../Kitchen/Kitchen.hpp"
+#include "../Logger/Logger.hpp"
 
 void plazza::Shell::helpParsing() {
     std::cout << "S := TYPE SIZE NUMBER [; TYPE SIZE NUMBER]*\n"
