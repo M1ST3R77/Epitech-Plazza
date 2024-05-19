@@ -5,11 +5,7 @@
 ** IPC.cpp
 */
 
-#include <iostream>
-#include <unistd.h>
-
 #include "IPC.hpp"
-#include "../Exceptions/Exceptions.hpp"
 
 IPC::IPC() :
     fd(std::vector(2, 0)) {
