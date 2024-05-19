@@ -9,6 +9,8 @@
 
 #include <list>
 
+#include "Command.hpp"
+
 namespace plazza {
     enum PizzaIngredient {
         Dough = 0,
@@ -29,5 +31,8 @@ namespace plazza {
 
         virtual int getTime() = 0;
         virtual std::list<PizzaIngredient> getNeededIngredient() = 0;
+
+        virtual pizza_t pack() = 0;
+        virtual std::string unpack() = 0;
     };
 }

@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include "Command.hpp"
-#include "../Pizza/PizzaFactory.hpp"
+#include "../Pizza/Manager/PizzaFactory.hpp"
 
 namespace plazza {
     Kitchen::Kitchen(const double mult, const int nb_cooks, const int restock_time, std::pair<IPC, IPC> &ipcs) :
@@ -24,7 +24,8 @@ namespace plazza {
                 _ipcs.first << "ready";
                 pizza_t order = {};
                 _ipcs.second >> order;
-                orders.push_back(PizzaFactory::createPizza(msg.substr(0, msg.find(' '))));
+                orders.push_back(PizzaFactory::createPizza(order));
+                std::cout << orders.back()->unpack() << std::endl;
             }
         }
     }

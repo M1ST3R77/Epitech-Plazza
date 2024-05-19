@@ -8,6 +8,6 @@
 #include "Americana.hpp"
 
 namespace plazza {
-    Americana::Americana() : APizza({Dough, Tomato, Gruyere, Steak}, 2) {
+    Americana::Americana(const PizzaSize size) : APizza(PizzaType::Americana, {Dough, Tomato, Gruyere, Steak}, 2, size) {
     }
 } // plazza

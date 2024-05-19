@@ -13,6 +13,7 @@
 
 namespace plazza {
     class PizzaPacker {
+    public:
         static pizza_t pack(const std::string &order_unpacked);
         static std::string unpack(const pizza_t &order_packed);
     };

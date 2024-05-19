@@ -8,6 +8,6 @@
 #include "Regina.hpp"
 
 namespace plazza {
-    Regina::Regina() : APizza({Dough, Tomato, Gruyere, Ham, Mushrooms}, 2) {
+    Regina::Regina(const PizzaSize size) : APizza(PizzaType::Regina, {Dough, Tomato, Gruyere, Ham, Mushrooms}, 2, size) {
     }
 } // plazza

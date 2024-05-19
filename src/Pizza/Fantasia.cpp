@@ -8,6 +8,6 @@
 #include "Fantasia.hpp"
 
 namespace plazza {
-    Fantasia::Fantasia() : APizza({Dough, Tomato, EggPlant, GoatCheese, ChiefLove}, 4) {
+    Fantasia::Fantasia(const PizzaSize size) : APizza(PizzaType::Fantasia, {Dough, Tomato, EggPlant, GoatCheese, ChiefLove}, 4, size) {
     }
 } // plazza

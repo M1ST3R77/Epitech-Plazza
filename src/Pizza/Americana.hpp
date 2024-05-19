@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include "APizza.hpp"
+#include "Manager/APizza.hpp"
 
 namespace plazza {
     class Americana final : public APizza {
     public:
-        Americana();
+        explicit Americana(PizzaSize size);
     };
 } // plazza

@@ -8,6 +8,6 @@
 #include "Margarita.hpp"
 
 namespace plazza {
-    Margarita::Margarita() : APizza({Dough, Tomato, Gruyere}, 1) {
+    Margarita::Margarita(const PizzaSize size) : APizza(PizzaType::Margarita, {Dough, Tomato, Gruyere}, 1, size) {
     }
 } // plazza
