@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include <chrono>
 #include <memory>
+#include <thread>
 
 #include "IPizza.hpp"
 #include "../IPC/IPC.hpp"
@@ -15,7 +17,7 @@
 namespace plazza {
     class Kitchen {
     public:
-        Kitchen(double mult, int nb_cooks, int restock_time, std::pair<IPC, IPC> &ipcs);
+        Kitchen(double mult, int nb_cooks, int restock_time, std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &ipcs);
 
         ~Kitchen();
 
@@ -23,10 +25,13 @@ namespace plazza {
         void cooker(double mult);
         void ingredient_filler(int restock_time);
 
-        std::pair<IPC, IPC> &_ipcs;
+        bool stop{false};
+        std::thread thread_ingr;
+        std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &_ipcs;
         std::vector<std::shared_ptr<IPizza>> orders{};
         std::vector<std::shared_ptr<IPizza>> cooking{};
         std::mutex order_mutex{};
+        std::mutex order_ready_mutex{};
         std::mutex ingredients_mutex{};
         std::vector<int> nb_ingredient;
     };

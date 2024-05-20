@@ -41,6 +41,7 @@ public:
     }
 
     void destruct() const;
+    [[nodiscard]] bool contentReadable() const;
 
 private:
     std::vector<int> fd;

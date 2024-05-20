@@ -13,19 +13,35 @@
 #include "../ThreadPool/ThreadPool.hpp"
 
 namespace plazza {
-    Kitchen::Kitchen(const double mult, const int nb_cooks, const int restock_time, std::pair<IPC, IPC> &ipcs) :
+    Kitchen::Kitchen(const double mult, const int nb_cooks, const int restock_time, std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &ipcs) :
         _ipcs(ipcs), nb_ingredient(NbIngredients, 5) {
-        ThreadPool thread_pool(std::max(static_cast<unsigned>(nb_cooks) + 1, std::thread::hardware_concurrency()));
-        thread_pool.enqueue([this, restock_time] { return ingredient_filler(restock_time); });
-        while (true) {
+        std::chrono::system_clock::time_point end_clock = std::chrono::system_clock::now();
+        ThreadPool thread_pool(std::max(static_cast<unsigned>(nb_cooks), std::thread::hardware_concurrency()));
+        thread_ingr = std::thread([this, restock_time] { return ingredient_filler(restock_time); });
+
+        Logger::log(std::string("Kitchen ") + std::to_string(getpid()) + ": Started", Logger::Info);
+
+        while (!stop) {
             std::string msg;
-            _ipcs.second >> msg;
+            while (!_ipcs.first.second.contentReadable()) {
+                std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+                if (!cooking.empty() || !orders.empty()) {
+                    end_clock = now;
+                    continue;
+                }
+                if (std::chrono::duration<double> elapsed_seconds = now - end_clock; elapsed_seconds.count() >= 5.0) {
+                    stop = true;
+                    return;
+                }
+            }
+            _ipcs.first.second >> msg;
+            end_clock = std::chrono::system_clock::now();
             if (msg == "nb_cooking")
-                _ipcs.first << std::to_string(orders.size() + cooking.size());
+                _ipcs.first.first << std::to_string(orders.size() + cooking.size());
             if (msg == "new_pizza") {
-                _ipcs.first << "ready";
+                _ipcs.first.first << "ready";
                 pizza_t order = {};
-                _ipcs.second >> order;
+                _ipcs.first.second >> order;
                 Logger::log(std::string("Kitchen ") + std::to_string(getpid()) + " received pizza: " + PizzaPacker::unpack(order), Logger::Info);
                 order_mutex.lock();
                 orders.push_back(PizzaFactory::createPizza(order));
@@ -36,11 +52,16 @@ namespace plazza {
     }
 
     Kitchen::~Kitchen() {
-        _ipcs.first.destruct();
-        _ipcs.second.destruct();
+        Logger::log(std::string("Kitchen ") + std::to_string(getpid()) + ": Stopped", Logger::Info);
+        thread_ingr.join();
+        _ipcs.first.first.destruct();
+        _ipcs.first.second.destruct();
+        _ipcs.second.first.destruct();
+        _ipcs.second.second.destruct();
     }
 
     void Kitchen::cooker(const double mult) {
+        const std::chrono::system_clock::time_point cook_clock = std::chrono::system_clock::now();
         order_mutex.lock();
         const std::shared_ptr<IPizza> order = orders.front();
         orders.erase(orders.begin());
@@ -53,23 +74,45 @@ namespace plazza {
                 nb_ingredient[ingr]--;
             } else {
                 ingredients_mutex.unlock();
-                while (!nb_ingredient[ingr]) {
-                }
+                while (!nb_ingredient[ingr]);
                 nb_ingredient[ingr]--;
                 ingredients_mutex.lock();
             }
         }
         ingredients_mutex.unlock();
-        usleep(static_cast<unsigned>(mult * static_cast<double>(order->getTime()) * 1000000.0));
+
+        const double cook_time_seconde = mult * static_cast<double>(order->getTime());
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = now - cook_clock;
+        while (elapsed_seconds.count() < cook_time_seconde) {
+            now = std::chrono::system_clock::now();
+            elapsed_seconds = now - cook_clock;
+        }
+
         Logger::log(std::string("Kitchen ") + std::to_string(getpid()) + " successfully cooked pizza: " + order->unpack(), Logger::Info);
+
         order_mutex.lock();
         cooking.erase(std::ranges::find(cooking, order));
         order_mutex.unlock();
+
+        order_ready_mutex.lock();
+        _ipcs.second.first << std::string("pizza ready");
+        std::string msg;
+        _ipcs.second.second >> msg;
+        if (msg != "ready")
+            throw exceptions::ProcessError("Unkown message received: " + msg);
+        _ipcs.second.first << order->pack();
+        order_ready_mutex.unlock();
     }
 
     void Kitchen::ingredient_filler(const int restock_time) {
-        while (true) {
-            usleep(restock_time * 1000);
+        std::chrono::system_clock::time_point restock_clock = std::chrono::system_clock::now();
+
+        while (!stop) {
+            const std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+            if (const std::chrono::duration<double> elapsed_seconds = now - restock_clock; elapsed_seconds.count() < restock_time * 1000)
+                continue;
+            restock_clock = now;
             ingredients_mutex.lock();
             for (auto &ingr : nb_ingredient)
                 ingr += ingr != 5;

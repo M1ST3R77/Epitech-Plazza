@@ -13,6 +13,7 @@
 #include "../IPC/IPC.hpp"
 #include "../Kitchen/Kitchen.hpp"
 #include "../Logger/Logger.hpp"
+#include "../Pizza/Manager/PizzaPacker.hpp"
 
 void plazza::Shell::helpParsing() {
     std::cout << "S := TYPE SIZE NUMBER [; TYPE SIZE NUMBER]*\n"
@@ -23,25 +24,29 @@ void plazza::Shell::helpParsing() {
 
 std::pair<IPC, IPC> &plazza::Shell::getLeastBusyKitchen() {
     std::vector<std::pair<int, std::pair<IPC, IPC> &>> kitchen_cooks;
+    std::list<pid_t> pid_to_erase{};
     for (auto &[pid, ipcs] : _kitchens.processes) {
-        const pid_t result = waitpid(pid, nullptr, WNOHANG);
-        if (result == 0) {
-            ipcs.second << "nb_cooking";
+        if (const pid_t result = waitpid(pid, nullptr, WNOHANG); result == 0) {
+            ipcs.first.second << "nb_cooking";
             std::string msg;
-            ipcs.first >> msg;
-            kitchen_cooks.emplace_back(str_to_int(msg), ipcs);
+            ipcs.first.first >> msg;
+            kitchen_cooks.emplace_back(str_to_int(msg), ipcs.first);
         } else if (result == -1)
             throw exceptions::ProcessError(std::string("Can't check if kitchen ") + std::to_string(pid) + " is alive");
         else
-            _kitchens.processes.erase(pid);
+            pid_to_erase.push_back(pid);
     }
+    for (const pid_t &pid : pid_to_erase)
+        _kitchens.processes.erase(pid);
     auto min_cook = kitchen_cooks.begin();
     for (auto it = kitchen_cooks.begin(); it != kitchen_cooks.end(); ++it)
         if (min_cook->first > it->first)
             min_cook = it;
     if (min_cook == kitchen_cooks.end() || min_cook->first >= _nb_cooks * 2) {
-        const pid_t new_pid = _kitchens.addProcess([this](std::pair<IPC, IPC> &ipcs) { return Kitchen(_mult, _nb_cooks, _restock_time, ipcs); });
-        return _kitchens.processes[new_pid];
+        const pid_t new_pid = _kitchens.addProcess([this](std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &ipcs) {
+            return Kitchen(_mult, _nb_cooks, _restock_time, ipcs);
+        });
+        return _kitchens.processes[new_pid].first;
     }
     return min_cook->second;
 }
@@ -54,6 +59,25 @@ void plazza::Shell::givePizza(const PizzaType type, const PizzaSize size) {
     if (msg != "ready")
         throw exceptions::ProcessError("Unkown message received: " + msg);
     kitchen_out << (pizza_t){type, size};
+}
+
+void plazza::Shell::pizzaReceiver() {
+    while (!stop) {
+        for (auto &ipcs : _kitchens.processes | std::views::values | std::views::values) {
+            if (!ipcs.first.contentReadable())
+                continue;
+            std::string msg;
+            ipcs.first >> msg;
+            if (msg != "pizza ready")
+                throw exceptions::ProcessError("Unkown message received: " + msg);
+            ipcs.second << "ready";
+            pizza_t order;
+            ipcs.first >> order;
+            std::string string = std::string("Reception : Pizza ready : ") + PizzaPacker::unpack(order);
+            std::cout << string << std::endl;
+            Logger::log(string, Logger::Info);
+        }
+    }
 }
 
 void plazza::Shell::parsing(const int ac, const std::vector<std::string_view> &av) {
@@ -75,6 +99,7 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
     parsing(ac, av);
     std::string cmd;
     Parsing parse;
+    std::thread pizza_receiver([this] { return this->pizzaReceiver(); });
 
     while (true) {
         std::cout << "> ";
@@ -97,4 +122,5 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
                 givePizza(type, size);
         parse._commands.clear();
     }
+    stop = true;
 }
