@@ -14,8 +14,10 @@
 
 namespace plazza {
     Kitchen::Kitchen(const double mult, const int nb_cooks, const int restock_time, std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &ipcs) :
-        _ipcs(ipcs), nb_ingredient(NbIngredients, 5) {
+        _ipcs(ipcs), nb_ingredient() {
         std::chrono::system_clock::time_point end_clock = std::chrono::system_clock::now();
+        for (auto &ingr : nb_ingredient)
+            ingr = 5;
         ThreadPool thread_pool(std::max(static_cast<unsigned>(nb_cooks), std::thread::hardware_concurrency()));
         thread_ingr = std::thread([this, restock_time] { return ingredient_filler(restock_time); });
 
@@ -38,6 +40,13 @@ namespace plazza {
             end_clock = std::chrono::system_clock::now();
             if (msg == "nb_cooking")
                 _ipcs.first.first << std::to_string(orders.size() + cooking.size());
+            if (msg == "status") {
+                order_mutex.lock();
+                ingredients_mutex.lock();
+                _ipcs.first.first << (kitchen_status_t){orders.size(), cooking.size(), thread_pool.activeThreads, nb_ingredient};
+                ingredients_mutex.unlock();
+                order_mutex.unlock();
+            }
             if (msg == "new_pizza") {
                 _ipcs.first.first << "ready";
                 pizza_t order = {};
@@ -110,12 +119,14 @@ namespace plazza {
 
         while (!stop) {
             const std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-            if (const std::chrono::duration<double> elapsed_seconds = now - restock_clock; elapsed_seconds.count() < restock_time * 1000)
+            if (const std::chrono::duration<double> elapsed_seconds = now - restock_clock; elapsed_seconds.count() < restock_time / 1000.0)
                 continue;
+
             restock_clock = now;
             ingredients_mutex.lock();
             for (auto &ingr : nb_ingredient)
                 ingr += ingr != 5;
+            Logger::log(std::string("Kitchen ") + std::to_string(getpid()) + ": Refilled !", Logger::Info);
             ingredients_mutex.unlock();
         }
     }

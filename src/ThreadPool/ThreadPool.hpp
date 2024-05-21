@@ -24,6 +24,8 @@ public:
 
     void enqueue(std::function<void()>);
 
+    std::atomic<size_t> activeThreads;
+
 private:
     void workerThread(size_t my_thread, const std::function<void()> &prior_task);
 
@@ -32,6 +34,5 @@ private:
     std::mutex queueMutex;
     std::condition_variable condition;
     std::atomic<bool> stop;
-    std::atomic<size_t> activeThreads;
     size_t _maxThreads;
 };
