@@ -19,13 +19,13 @@
 
 class ThreadPool {
 public:
-    explicit ThreadPool(size_t maxThreads);
+    explicit ThreadPool(size_t max_threads);
     ~ThreadPool();
 
     void enqueue(std::function<void()>);
 
 private:
-    void workerThread();
+    void workerThread(size_t my_thread, const std::function<void()> &prior_task);
 
     std::vector<std::thread> workers;
     std::queue<std::function<void()>> tasks;

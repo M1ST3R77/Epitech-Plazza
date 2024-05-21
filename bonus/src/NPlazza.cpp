@@ -10,27 +10,11 @@
 plazza::NPlazza::NPlazza() : NCurses(), lines(LINES), cols(COLS) {}
 
 
-void plazza::NPlazza::printTitle(plazza::opts_enum opt)
+void plazza::NPlazza::print2D(const std::vector<std::string>& elem, int xpos, int ypos)
 {
-    int ytitle = -17;
-
-    if (opt == UNKNOWN) {
-        for (const auto &tmp : tPlazza) {
-            printString(tmp, cols / 2 - tmp.length() / 2, lines / 2 + ytitle);
-            ytitle++;
-        }
-    }
-    if (opt == HELP) {
-        for (const auto &tmp : tHelp) {
-            printString(tmp, cols / 2 - tmp.length() / 2, lines / 2 + ytitle);
-            ytitle++;
-        }
-    }
-    if (opt == ORDER) {
-        for (const auto &tmp : tOrder) {
-            printString(tmp, cols / 2 - tmp.length() / 2, lines / 2 + ytitle);
-            ytitle++;
-        }
+    for (const auto &tmp : elem) {
+        printString(tmp, cols / 2 - tmp.length() / 2 + xpos, lines / 2 + ypos);
+        ypos++;
     }
 }
 
@@ -53,7 +37,7 @@ void plazza::NPlazza::printStart()
             {{ORDER, -5}, {DETAILS, 0}, {HELP, 5}, {EXIT, 10}};
 
     clearWindow();
-    printTitle(opts_get);
+    print2D(tPlazza, 0, -17);
     it = choose_opts.find(opts_choose);
     printString(">", cols / 2 - 10, lines / 2 + it->second);
     printOpts(*this);
@@ -89,7 +73,7 @@ static void displayHelp(plazza::NPlazza grap)
 void plazza::NPlazza::printHelp()
 {
     clearWindow();
-    printTitle(opts_get);
+    print2D(tHelp, 0, -17);
     displayHelp(*this);
     input = getInput();
     if (input == '\n')
@@ -99,6 +83,10 @@ void plazza::NPlazza::printHelp()
 
 static void displayOrder(plazza::NPlazza grap)
 {
+    std::vector<std::string> dhorizontal =
+            {
+                "|", "|", "|", "|", "|", "|", "|"
+            };
     std::unordered_map<plazza::cOrder_enum, std::pair<int, int>>::iterator it;
     std::unordered_map<plazza::cOrder_enum, std::pair<int, int>> choose_order
             {
@@ -107,29 +95,62 @@ static void displayOrder(plazza::NPlazza grap)
                 {plazza::SEND, std::make_pair(10, 12)},
                 {plazza::BACK, std::make_pair(10, 15)}
             };
+    std::string dvertical;
 
+    for (int i = 0; i < 62; i++)
+        dvertical += "_";
     it = choose_order.find(grap.opts_order);
     grap.printString(">", grap.cols / 2 - it->second.first, grap.lines / 2 + it->second.second);
     grap.printString("ORDER :", grap.cols / 2 - 40, grap.lines / 2 - 1);
-    grap.printString("ADDS", grap.cols / 2 - 2, grap.lines / 2 + 9);
-    grap.printString("SEND", grap.cols / 2 - 2, grap.lines / 2 + 12);
-    grap.printString("BACK", grap.cols / 2 - 2, grap.lines / 2 + 15);
+    grap.printString("TYPE", grap.cols / 2 - 20, grap.lines / 2 - 6);
+    grap.printString("SIZE", grap.cols / 2, grap.lines / 2 - 6);
+    grap.printString("NUMBER", grap.cols / 2 + 18, grap.lines / 2 - 6);
+    grap.printString("ADDS", grap.cols / 2, grap.lines / 2 + 9);
+    grap.printString("SEND", grap.cols / 2, grap.lines / 2 + 12);
+    grap.printString("BACK", grap.cols / 2, grap.lines / 2 + 15);
+    grap.printString(dvertical, grap.cols / 2 - 30, grap.lines / 2 - 5);
+    grap.print2D(dhorizontal, -30, -4);
+    grap.print2D(dhorizontal, -7, -4);
+    grap.print2D(dhorizontal, 9, -4);
+    grap.print2D(dhorizontal, 31, -4);
+    grap.printString(dvertical, grap.cols / 2 - 30, grap.lines / 2 + 2);
 }
 
 static void printCOrder(plazza::NPlazza grap)
 {
-    std::unordered_map<plazza::PizzaType, std::string>::iterator it;
+    std::unordered_map<plazza::PizzaType, std::string>::iterator itType;
+    std::unordered_map<plazza::PizzaSize, std::string>::iterator itSize;
 
     if (grap.choose_cmd.pizza != plazza::Regina) {
-        it = plazza::revTypes.find(static_cast<plazza::PizzaType>(grap.choose_cmd.pizza / 2));
-        grap.printString(it->second, grap.cols / 2 - 30 + (12 - it->second.length() / 2), grap.lines / 2 - 3);
+        itType = plazza::revTypes.find(static_cast<plazza::PizzaType>(grap.choose_cmd.pizza / 2));
+        grap.printString(itType->second, grap.cols / 2 - 30 + (12 - itType->second.length() / 2), grap.lines / 2 - 3);
     }
     if (grap.choose_cmd.pizza != plazza::Fantasia) {
-        it = plazza::revTypes.find(static_cast<plazza::PizzaType>(grap.choose_cmd.pizza * 2));
-        grap.printString(it->second, grap.cols / 2 - 30 + (12 - it->second.length() / 2), grap.lines / 2 + 1);
+        itType = plazza::revTypes.find(static_cast<plazza::PizzaType>(grap.choose_cmd.pizza * 2));
+        grap.printString(itType->second, grap.cols / 2 - 30 + (12 - itType->second.length() / 2), grap.lines / 2 + 1);
     }
-    it = plazza::revTypes.find(grap.choose_cmd.pizza);
-    grap.printString(it->second, grap.cols / 2 - 30 + (12 - it->second.length() / 2), grap.lines / 2 - 1);
+    if (grap.choose_cmd.size != plazza::S) {
+        itSize = plazza::revSizes.find(static_cast<plazza::PizzaSize>(grap.choose_cmd.size / 2));
+        grap.printString(itSize->second, grap.cols / 2 - 11 + (12 - itSize->second.length() / 2), grap.lines / 2 - 3);
+    }
+    if (grap.choose_cmd.size != plazza::XXL) {
+        itSize = plazza::revSizes.find(static_cast<plazza::PizzaSize>(grap.choose_cmd.size * 2));
+        grap.printString(itSize->second, grap.cols / 2 - 11 + (12 - itSize->second.length() / 2), grap.lines / 2 + 1);
+    }
+    if (grap.choose_cmd.d1 != 0)
+        grap.printString(std::to_string(grap.choose_cmd.d1 - 1), grap.cols / 2 + 6 + (12 - 1 / 2), grap.lines / 2 - 3);
+    if (grap.choose_cmd.d1 != 9)
+        grap.printString(std::to_string(grap.choose_cmd.d1 + 1), grap.cols / 2 + 6 + (12 - 1 / 2), grap.lines / 2 + 1);
+    if (grap.choose_cmd.d2 != 0)
+        grap.printString(std::to_string(grap.choose_cmd.d2 - 1), grap.cols / 2 + 11 + (12 - 1 / 2), grap.lines / 2 - 3);
+    if (grap.choose_cmd.d2 != 9)
+        grap.printString(std::to_string(grap.choose_cmd.d2 + 1), grap.cols / 2 + 11 + (12 - 1 / 2), grap.lines / 2 + 1);
+    itType = plazza::revTypes.find(grap.choose_cmd.pizza);
+    itSize = plazza::revSizes.find(grap.choose_cmd.size);
+    grap.printString(itType->second, grap.cols / 2 - 30 + (12 - itType->second.length() / 2), grap.lines / 2 - 1);
+    grap.printString(itSize->second, grap.cols / 2 - 11 + (12 - itSize->second.length() / 2), grap.lines / 2 - 1);
+    grap.printString(std::to_string(grap.choose_cmd.d1), grap.cols / 2 + 6 + (12 - 1 / 2), grap.lines / 2 - 1);
+    grap.printString(std::to_string(grap.choose_cmd.d2), grap.cols / 2 + 11 + (12 - 1 / 2), grap.lines / 2 - 1);
 }
 
 void plazza::NPlazza::setInputOrder(plazza::Shell shell) {
@@ -162,10 +183,22 @@ void plazza::NPlazza::setInputOrder(plazza::Shell shell) {
             if (input == KEY_UP) {
                 if (order_type == TYPE && choose_cmd.pizza != Regina)
                     choose_cmd.pizza = static_cast<PizzaType>(choose_cmd.pizza / 2);
+                if (order_type == SIZE && choose_cmd.size != S)
+                    choose_cmd.size = static_cast<PizzaSize>(choose_cmd.size / 2);
+                if (order_type == D1 && choose_cmd.d1 != 0)
+                    choose_cmd.d1--;
+                if (order_type == D2 && choose_cmd.d2 != 0)
+                    choose_cmd.d2--;
             }
             if (input == KEY_DOWN) {
                 if (order_type == TYPE && choose_cmd.pizza != Fantasia)
                     choose_cmd.pizza = static_cast<PizzaType>(choose_cmd.pizza * 2);
+                if (order_type == SIZE && choose_cmd.size != XXL)
+                    choose_cmd.size = static_cast<PizzaSize>(choose_cmd.size * 2);
+                if (order_type == D1 && choose_cmd.d1 != 9)
+                    choose_cmd.d1++;
+                if (order_type == D2 && choose_cmd.d2 != 9)
+                    choose_cmd.d2++;
             }
         }
     }
@@ -174,7 +207,7 @@ void plazza::NPlazza::setInputOrder(plazza::Shell shell) {
 void plazza::NPlazza::printOrder(plazza::Shell shell)
 {
     clearWindow();
-    printTitle(opts_get);
+    print2D(tOrder, 0, -17);
     displayOrder(*this);
     printCOrder(*this);
     setInputOrder(std::move(shell));

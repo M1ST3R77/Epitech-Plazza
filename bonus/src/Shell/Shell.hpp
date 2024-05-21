@@ -15,15 +15,16 @@ namespace plazza {
     public:
         Shell(int ac, const std::vector<std::string_view> &av);
         void givePizza(PizzaType type, PizzaSize size);
+        void pizzaReceiver();
 
     private:
         void parsing(int ac, const std::vector<std::string_view> &av);
-        static void helpParsing();
         std::pair<IPC, IPC> &getLeastBusyKitchen();
 
         double _mult{};
         int _nb_cooks{};
         int _restock_time{};
+        bool stop{false};
         ProcessPool _kitchens{};
     };
 }

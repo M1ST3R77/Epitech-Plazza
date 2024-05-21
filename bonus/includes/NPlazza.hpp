@@ -83,7 +83,7 @@ namespace plazza {
         NPlazza();
         ~NPlazza() = default;
 
-        void printTitle(opts_enum opt);
+        void print2D(const std::vector<std::string>& elem, int xpos, int ypos);
         void setInputOrder(Shell shell);
 
         void printStart();
