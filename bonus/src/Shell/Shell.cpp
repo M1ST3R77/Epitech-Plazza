@@ -70,7 +70,7 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
         if (graphic.opts_get == UNKNOWN)
             graphic.printStart();
         if (graphic.opts_get == ORDER)
-            graphic.printOrder();
+            graphic.printOrder(*this);
         if (graphic.opts_get == HELP)
             graphic.printHelp();
         if (graphic.opts_get == EXIT)

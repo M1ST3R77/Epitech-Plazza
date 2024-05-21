@@ -14,12 +14,12 @@ namespace plazza {
     class Shell {
     public:
         Shell(int ac, const std::vector<std::string_view> &av);
+        void givePizza(PizzaType type, PizzaSize size);
 
     private:
         void parsing(int ac, const std::vector<std::string_view> &av);
         static void helpParsing();
         std::pair<IPC, IPC> &getLeastBusyKitchen();
-        void givePizza(PizzaType type, PizzaSize size);
 
         double _mult{};
         int _nb_cooks{};
