@@ -15,6 +15,13 @@
 #include "../IPC/IPC.hpp"
 
 namespace plazza {
+    typedef struct status_s {
+        size_t orders_waiting;
+        size_t orders_being_cooked;
+        size_t nb_cooks;
+        std::array<int, NbIngredients> ingredients;
+    } kitchen_status_t;
+
     class Kitchen {
     public:
         Kitchen(double mult, int nb_cooks, int restock_time, std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &ipcs);
@@ -33,6 +40,6 @@ namespace plazza {
         std::mutex order_mutex{};
         std::mutex order_ready_mutex{};
         std::mutex ingredients_mutex{};
-        std::vector<int> nb_ingredient;
+        std::array<int, NbIngredients> nb_ingredient;
     };
 } // plazza

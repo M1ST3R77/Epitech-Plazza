@@ -9,6 +9,7 @@
 
 #include "../Parsing/Parsing.hpp"
 #include "../Process/ProcessPool.hpp"
+#include "../Kitchen/Kitchen.hpp"
 
 namespace plazza {
     class Shell {
@@ -20,6 +21,8 @@ namespace plazza {
         static void helpParsing();
         std::pair<IPC, IPC> &getLeastBusyKitchen();
         void givePizza(PizzaType type, PizzaSize size);
+        std::unordered_map<pid_t, kitchen_status_t> getKitchenStatus();
+        void displayKitchenStatus();
         void pizzaReceiver();
 
         double _mult{};
