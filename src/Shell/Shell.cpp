@@ -123,4 +123,5 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
         parse._commands.clear();
     }
     stop = true;
+    pizza_receiver.join();
 }
