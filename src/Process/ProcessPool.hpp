@@ -32,15 +32,12 @@ public:
         }
         if (pid < 0)
             throw exceptions::ProcessError(std::string("fork: ") + std::strerror(errno));
-        auto nodeHandle = processes.extract(0);
-        if (!nodeHandle.empty()) {
+        if (auto nodeHandle = processes.extract(0); !nodeHandle.empty()) {
             nodeHandle.key() = pid;
             processes.insert(std::move(nodeHandle));
         }
         return pid;
     }
 
-    int endProcess(pid_t pid) const;
-
-    std::unordered_map<pid_t, std::pair<IPC, IPC>> processes{};
+    std::unordered_map<pid_t, std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>>> processes{};
 };

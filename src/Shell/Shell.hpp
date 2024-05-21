@@ -20,10 +20,12 @@ namespace plazza {
         static void helpParsing();
         std::pair<IPC, IPC> &getLeastBusyKitchen();
         void givePizza(PizzaType type, PizzaSize size);
+        void pizzaReceiver();
 
         double _mult{};
         int _nb_cooks{};
         int _restock_time{};
+        bool stop{false};
         ProcessPool _kitchens{};
     };
 }

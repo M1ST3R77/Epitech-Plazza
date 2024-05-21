@@ -7,11 +7,10 @@
 
 #include "ThreadPool.hpp"
 
-#include <iostream>
+#include "../Logger/Logger.hpp"
 
-
-ThreadPool::ThreadPool(const size_t maxThreads) :
-    stop(false), activeThreads(0), _maxThreads(maxThreads) {
+ThreadPool::ThreadPool(const size_t max_threads) :
+    stop(false), activeThreads(0), _maxThreads(max_threads) {
 }
 
 ThreadPool::~ThreadPool() {
@@ -19,7 +18,6 @@ ThreadPool::~ThreadPool() {
         std::unique_lock lock(queueMutex);
         stop = true;
     }
-    condition.notify_all();
     for (std::thread &worker : workers) {
         if (worker.joinable()) {
             worker.join();
@@ -31,25 +29,25 @@ ThreadPool::~ThreadPool() {
 void ThreadPool::enqueue(std::function<void()> task) {
     {
         std::unique_lock lock(queueMutex);
-        tasks.emplace(std::move(task));
-    }
-    condition.notify_one();
-    {
-        std::unique_lock lock(queueMutex);
         if (activeThreads < _maxThreads && activeThreads <= tasks.size()) {
-            workers.emplace_back(&ThreadPool::workerThread, this);
+            workers.emplace_back([this, task] { return this->workerThread(this->activeThreads, task); });
             ++activeThreads;
+        } else {
+            tasks.emplace(std::move(task));
         }
     }
 }
 
-void ThreadPool::workerThread() {
+void ThreadPool::workerThread(const size_t my_thread, const std::function<void()> &prior_task) {
+    Logger::log(std::string("Kitchen ") + std::to_string(getpid()) + ": Cook " + std::to_string(my_thread) + ": Started", Logger::Info);
+    prior_task();
     while (true) {
         std::function<void()> task;
         {
             std::unique_lock lock(queueMutex);
             if (tasks.empty() || stop) {
                 --activeThreads;
+                Logger::log(std::string("Kitchen ") + std::to_string(getpid()) + ": Cook " + std::to_string(my_thread) + ": Stopped", Logger::Info);
                 return;
             }
             if (!tasks.empty()) {
