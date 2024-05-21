@@ -25,6 +25,18 @@ namespace plazza {
         NbIngredients
     };
 
+    const std::unordered_map<PizzaIngredient, std::string> ingredients_name = {
+        {Dough, "Dough"},
+        {Tomato, "Tomato"},
+        {Gruyere, "Gruyere"},
+        {Ham, "Ham"},
+        {Mushrooms, "Mushrooms"},
+        {Steak, "Steak"},
+        {EggPlant, "EggPlant"},
+        {GoatCheese, "GoatCheese"},
+        {ChiefLove, "ChiefLove"}
+    };
+
     class IPizza {
     public:
         virtual ~IPizza() = default;

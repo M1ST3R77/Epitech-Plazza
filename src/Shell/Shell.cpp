@@ -11,7 +11,6 @@
 #include "../src/Parsing/Parsing.hpp"
 #include "Utils.hpp"
 #include "../IPC/IPC.hpp"
-#include "../Kitchen/Kitchen.hpp"
 #include "../Logger/Logger.hpp"
 #include "../Pizza/Manager/PizzaPacker.hpp"
 
@@ -59,6 +58,37 @@ void plazza::Shell::givePizza(const PizzaType type, const PizzaSize size) {
     if (msg != "ready")
         throw exceptions::ProcessError("Unkown message received: " + msg);
     kitchen_out << (pizza_t){type, size};
+}
+
+
+std::unordered_map<pid_t, plazza::kitchen_status_t> plazza::Shell::getKitchenStatus() {
+    std::unordered_map<pid_t, kitchen_status_t> kitchen_status{};
+    for (auto &[pid, ipcs] : _kitchens.processes) {
+        if (const pid_t result = waitpid(pid, nullptr, WNOHANG); result == 0) {
+            ipcs.first.second << "status";
+            kitchen_status_t status;
+            ipcs.first.first >> status;
+            kitchen_status.emplace(pid, status);
+        }
+    }
+    return kitchen_status;
+}
+
+void plazza::Shell::displayKitchenStatus() {
+    const std::unordered_map<pid_t, kitchen_status_t> kitchen_status = getKitchenStatus();
+
+    if (kitchen_status.empty())
+        std::cout << "All Kitchens are closed\n";
+    for (const auto &[pid, status] : kitchen_status) {
+        std::string str = "Kitchen ";
+        str += std::to_string(pid) + ":\n" + std::to_string(status.orders_waiting) + " orders waiting to be cooked,\n" +
+            std::to_string(status.orders_being_cooked) + " orders being cooked by\n" +
+            std::to_string(status.nb_cooks) + " cookers working\nHere is the left ingredients :\n";
+        for (size_t i = 0; i < NbIngredients; i++)
+            str += " - " + std::to_string(status.ingredients[i]) + ' ' + ingredients_name.at(static_cast<PizzaIngredient>(i)) + " left\n";
+        str += '\n';
+        std::cout << str;
+    }
 }
 
 void plazza::Shell::pizzaReceiver() {
@@ -111,11 +141,17 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
             helpParsing();
             continue;
         }
+        if (cmd == "status") {
+            displayKitchenStatus();
+            continue;
+        }
         try {
             parse.setCmd(cmd);
             parse.getCommand();
         } catch (const exceptions::ParsingError &) {
             std::cout << "Invalid Command" << std::endl;
+            parse._commands.clear();
+            continue;
         }
         for (const auto &[type, size, number] : parse._commands)
             for (int i = 0; i < number; i++)
@@ -123,4 +159,5 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
         parse._commands.clear();
     }
     stop = true;
+    pizza_receiver.join();
 }
