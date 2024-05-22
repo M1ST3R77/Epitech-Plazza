@@ -9,7 +9,7 @@
 
 #include "NCurses.hpp"
 #include "Command.hpp"
-#include "../src/Shell/Shell.hpp"
+#include "../Shell/Shell.hpp"
 #include <unordered_map>
 #include <vector>
 
@@ -85,6 +85,8 @@ namespace plazza {
 
         void print2D(const std::vector<std::string>& elem, int xpos, int ypos);
         void setInputOrder(Shell shell);
+        void input_enter(Shell shell);
+        void choose_order(float mult, int numb);
 
         void printStart();
         void printOrder(Shell shell);

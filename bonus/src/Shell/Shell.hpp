@@ -9,6 +9,7 @@
 
 #include "Command.hpp"
 #include "../Process/ProcessPool.hpp"
+#include "../Kitchen/Kitchen.hpp"
 
 namespace plazza {
     class Shell {
@@ -20,6 +21,8 @@ namespace plazza {
     private:
         void parsing(int ac, const std::vector<std::string_view> &av);
         std::pair<IPC, IPC> &getLeastBusyKitchen();
+        std::unordered_map<pid_t, kitchen_status_t> getKitchenStatus();
+        void displayKitchenStatus();
 
         double _mult{};
         int _nb_cooks{};

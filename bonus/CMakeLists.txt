@@ -42,8 +42,8 @@ set(SRC src/Main.cpp
         src/Logger/Logger.hpp
         src/ThreadPool/ThreadPool.cpp
         src/ThreadPool/ThreadPool.hpp
-        src/NCurses.cpp
-        src/NPlazza.cpp
+        src/Graphic/NCurses.cpp
+        src/Graphic/NPlazza.cpp
 )
 
 include_directories(includes)
