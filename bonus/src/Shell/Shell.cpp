@@ -82,25 +82,6 @@ void plazza::Shell::displayKitchenStatus() {
     }
 }
 
-void plazza::Shell::pizzaReceiver() {
-    while (!stop) {
-        for (auto &ipcs : _kitchens.processes | std::views::values | std::views::values) {
-            if (!ipcs.first.contentReadable())
-                continue;
-            std::string msg;
-            ipcs.first >> msg;
-            if (msg != "pizza ready")
-                throw exceptions::ProcessError("Unkown message received: " + msg);
-            ipcs.second << "ready";
-            pizza_t order;
-            ipcs.first >> order;
-            std::string string = std::string("Reception : Pizza ready : ") + PizzaPacker::unpack(order);
-            std::cout << string << std::endl;
-            Logger::log(string, Logger::Info);
-        }
-    }
-}
-
 void plazza::Shell::parsing(const int ac, const std::vector<std::string_view> &av) {
     if (ac != 4)
         throw exceptions::ParamsError(ac < 4 ? "Not enough parameters" : "Too many parameters");
@@ -115,20 +96,73 @@ void plazza::Shell::parsing(const int ac, const std::vector<std::string_view> &a
         throw exceptions::ParamsError("Bad arguments");
 }
 
+void plazza::Shell::pizzaReceiver(NPlazza grap) {
+    std::vector<std::string> pop_pizza;
+    int ypos = 0;
+
+    while (!stop) {
+        for (auto &ipcs : _kitchens.processes | std::views::values | std::views::values) {
+            if (!ipcs.first.contentReadable())
+                continue;
+            std::string msg;
+            ipcs.first >> msg;
+            if (msg != "pizza ready")
+                throw exceptions::ProcessError("Unkown message received: " + msg);
+            ipcs.second << "ready";
+            pizza_t order;
+            ipcs.first >> order;
+            std::string pizza = PizzaPacker::unpack(order);
+            std::string string = std::string("Reception : Pizza ready : ") + PizzaPacker::unpack(order);
+            Logger::log(std::string("Reception : Pizza ready : ") + pizza, Logger::Info);
+
+            if (pop_pizza.size() >= 3)
+                pop_pizza.pop_back();
+            pop_pizza.insert(pop_pizza.begin(), pizza);
+
+            ypos = 0;
+            for (const std::string& tmp : pop_pizza) {
+                grap.printString(tmp + std::string(" is ready!"), 160, 35 + ypos);
+                ypos += 2;
+            }
+            grap.refreshWindow();
+
+            ypos = 0;
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            for (const std::string& tmp : pop_pizza) {
+                grap.printEmpty(160, 35 + ypos, tmp.size() + std::string(" is ready!").size());
+                ypos += 2;
+            }
+            grap.refreshWindow();
+        }
+    }
+}
+
+void plazza::Shell::sendPizza(plazza::NPlazza &grap)
+{
+    for (const auto &[type, size, number] : grap.commands)
+        for (int i = 0; i < number; i++)
+            givePizza(type, size);
+    grap.commands.clear();
+}
+
 plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
     parsing(ac, av);
-    std::thread pizza_receiver([this] { return this->pizzaReceiver(); });
     NPlazza graphic;
+    std::thread pizza_receiver([this, &graphic] { return this->pizzaReceiver(graphic); });
 
     while (graphic.input != 27) {
         if (graphic.opts_get == UNKNOWN)
             graphic.printStart();
-        if (graphic.opts_get == ORDER)
-            graphic.printOrder(*this);
-        if (graphic.opts_get == HELP)
+        else if (graphic.opts_get == ORDER)
+            graphic.printOrder();
+        else if (graphic.opts_get == HELP)
             graphic.printHelp();
-        if (graphic.opts_get == EXIT)
+        else if (graphic.opts_get == EXIT)
             break;
+        if (graphic.send) {
+            sendPizza(graphic);
+            graphic.send = false;
+        }
     }
     stop = true;
     pizza_receiver.join();

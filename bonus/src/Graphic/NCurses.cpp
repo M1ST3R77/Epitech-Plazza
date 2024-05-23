@@ -10,9 +10,9 @@
 plazza::NCurses::NCurses()
 {
     initscr();
-    cbreak();
-    noecho();
     keypad(stdscr, TRUE);
+    noecho();
+    set_escdelay(0);
     curs_set(0);
 }
 
@@ -24,6 +24,25 @@ plazza::NCurses::~NCurses()
 void plazza::NCurses::printString(const std::string& str, int x, int y)
 {
     mvprintw(y, x, "%s", str.c_str());
+}
+
+void plazza::NCurses::printDim(const std::string &str, int x, int y)
+{
+    attron(A_DIM);
+    mvprintw(y, x, "%s", str.c_str());
+    attroff(A_DIM);
+}
+
+void plazza::NCurses::printBold(const std::string &str, int x, int y)
+{
+    attron(A_BOLD);
+    mvprintw(y, x, "%s", str.c_str());
+    attroff(A_BOLD);
+}
+
+void plazza::NCurses::printEmpty(int x, int y, int len)
+{
+    mvprintw(y, x, "%*s", len, "");
 }
 
 void plazza::NCurses::refreshWindow()

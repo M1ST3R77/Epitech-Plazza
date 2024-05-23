@@ -10,19 +10,21 @@
 #include "Command.hpp"
 #include "../Process/ProcessPool.hpp"
 #include "../Kitchen/Kitchen.hpp"
+#include "../Graphic/NPlazza.hpp"
 
 namespace plazza {
     class Shell {
     public:
         Shell(int ac, const std::vector<std::string_view> &av);
-        void givePizza(PizzaType type, PizzaSize size);
-        void pizzaReceiver();
 
     private:
         void parsing(int ac, const std::vector<std::string_view> &av);
         std::pair<IPC, IPC> &getLeastBusyKitchen();
+        void givePizza(PizzaType type, PizzaSize size);
         std::unordered_map<pid_t, kitchen_status_t> getKitchenStatus();
         void displayKitchenStatus();
+        void pizzaReceiver(NPlazza grap);
+        void sendPizza(NPlazza &grap);
 
         double _mult{};
         int _nb_cooks{};

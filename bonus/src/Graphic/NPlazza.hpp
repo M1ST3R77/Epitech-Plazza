@@ -9,7 +9,6 @@
 
 #include "NCurses.hpp"
 #include "Command.hpp"
-#include "../Shell/Shell.hpp"
 #include <unordered_map>
 #include <vector>
 
@@ -31,7 +30,7 @@ namespace plazza {
                     "   ##     ##  ##         ##         ##     ##",
                     "   ##     ##  ##         ##         ##     ##",
                     "   #########  #########  ##         #########",
-                    "   #########  #########  ##         ##       ",
+                    "   ##     ##  ##         ##         ##       ",
                     "   ##     ##  ##         ##         ##       ",
                     "   ##     ##  ##         ##         ##       ",
                     "   ##     ##  #########  #########  ##       "
@@ -43,7 +42,7 @@ namespace plazza {
                     "  ##      ##  ##      ##  ##      ##  ##          ##      ##",
                     "  ##      ##  ##      ##  ##      ##  ##          ##      ##",
                     "  ##      ##  ##########  ##      ##  ##########  ##########",
-                    "  ##      ##  ## ##       ##      ##  ##########  ## ##     ",
+                    "  ##      ##  ## ##       ##      ##  ##          ## ##     ",
                     "  ##      ##  ##   ##     ##      ##  ##          ##   ##   ",
                     "  ##      ##  ##    ##    ##      ##  ##          ##    ##  ",
                     "  ##########  ##      ##  #########   ##########  ##      ##"
@@ -84,23 +83,23 @@ namespace plazza {
         ~NPlazza() = default;
 
         void print2D(const std::vector<std::string>& elem, int xpos, int ypos);
-        void setInputOrder(Shell shell);
-        void input_enter(Shell shell);
+        void setInputOrder();
+        void input_enter();
         void choose_order(float mult, int numb);
 
         void printStart();
-        void printOrder(Shell shell);
+        void printOrder();
         void printHelp();
 
         int input = 0;
         int lines = 0;
         int cols = 0;
-
+        bool send = false;
 
         Ccommand_t choose_cmd = {Margarita, M, 4, 2};
         std::vector<command_t> commands;
-        OType_enum order_type = TYPE;
 
+        OType_enum order_type = TYPE;
         opts_enum opts_choose = ORDER;
         opts_enum opts_get = UNKNOWN;
         cOrder_enum opts_order = ORD;

@@ -40,6 +40,7 @@ void plazza::NPlazza::printStart()
     it = choose_opts.find(opts_choose);
     printString(">", cols / 2 - 10, lines / 2 + it->second);
     printOpts(*this);
+    refreshWindow();
     input = getInput();
     if ((input == KEY_UP || input == 'z') && it->second != -5)
         opts_choose = static_cast<opts_enum>(opts_choose - 1);
@@ -74,6 +75,7 @@ void plazza::NPlazza::printHelp()
     clearWindow();
     print2D(tHelp, 0, -17);
     displayHelp(*this);
+    refreshWindow();
     input = getInput();
     if (input == '\n')
         opts_get = UNKNOWN;
@@ -90,6 +92,15 @@ static void displayOrder(plazza::NPlazza grap)
                 {plazza::BACK, std::make_pair(10, 15)}
             };
 
+    std::unordered_map<plazza::OType_enum, std::string> choose_pizza
+            {
+                {plazza::TYPE, "TYPE"},
+                {plazza::SIZE, "SIZE"},
+                {plazza::D1, "NUMBER"},
+                {plazza::D2, "NUMBER"}
+            };
+    std::unordered_map<plazza::OType_enum, std::string>::iterator choose;
+
     std::string dvertical(62, '_');
     std::unordered_map<plazza::cOrder_enum, std::pair<int, int>>::iterator it =
             choose_order.find(grap.opts_order);
@@ -97,17 +108,28 @@ static void displayOrder(plazza::NPlazza grap)
             {
                     {">", std::make_pair(-it->second.first, it->second.second)},
                     {"ORDER :", std::make_pair(-40, -1)},
-                    {"TYPE", std::make_pair(-20, -6)},
-                    {"SIZE", std::make_pair(0, -6)},
-                    {"NUMBER", std::make_pair(18, -6)},
                     {"ADDS", std::make_pair(0, 9)},
                     {"SEND", std::make_pair(0, 12)},
                     {"BACK", std::make_pair(0, 15)}
             };
+    std::unordered_map<std::string, std::pair<int, int>> str_choose
+            {
+                    {"TYPE", std::make_pair(-20, -6)},
+                    {"SIZE", std::make_pair(0, -6)},
+                    {"NUMBER", std::make_pair(18, -6)}
+            };
     std::vector<std::string> dhorizontal {"|", "|", "|", "|", "|", "|", "|"};
 
+    choose = choose_pizza.find(grap.order_type);
+    for (const auto &tmp : str_choose) {
+        if (choose->second == tmp.first)
+            grap.printBold(tmp.first, grap.cols / 2 + tmp.second.first, grap.lines / 2 + tmp.second.second);
+        else
+            grap.printDim(tmp.first, grap.cols / 2 + tmp.second.first, grap.lines / 2 + tmp.second.second);
+    }
     for (const auto &tmp : str_order)
         grap.printString(tmp.first, grap.cols / 2 + tmp.second.first, grap.lines / 2 + tmp.second.second);
+
     grap.printString(dvertical, grap.cols / 2 - 30, grap.lines / 2 - 5);
     grap.print2D(dhorizontal, -30, -4);
     grap.print2D(dhorizontal, -7, -4);
@@ -168,7 +190,7 @@ static void printCOrder(plazza::NPlazza grap)
     printDigit(grap, grap.choose_cmd.d2, 11, -1);
 }
 
-void plazza::NPlazza::input_enter(plazza::Shell shell)
+void plazza::NPlazza::input_enter()
 {
     if (opts_order == plazza::BACK) {
         commands.clear();
@@ -181,12 +203,8 @@ void plazza::NPlazza::input_enter(plazza::Shell shell)
                     choose_cmd.d1 * 10 + choose_cmd.d2
                 };
         commands.push_back(tmp);
-    } else if (opts_order == plazza::SEND) {
-        for (const auto &[type, size, number] : commands)
-            for (int i = 0; i < number; i++)
-                shell.givePizza(type, size);
-        commands.clear();
-    }
+    } else if (opts_order == plazza::SEND)
+        send = true;
 }
 
 static plazza::cOrder_enum input_tab(plazza::cOrder_enum opts_order)
@@ -223,11 +241,11 @@ void plazza::NPlazza::choose_order(float mult, int numb)
         choose_cmd.d2 += numb;
 }
 
-void plazza::NPlazza::setInputOrder(plazza::Shell shell) {
+void plazza::NPlazza::setInputOrder() {
     input = getInput();
 
     if (input == '\n')
-        input_enter(std::move(shell));
+        input_enter();
     else if (input == '\t')
         opts_order = input_tab(opts_order);
     else if (opts_order == ORD) {
@@ -239,11 +257,12 @@ void plazza::NPlazza::setInputOrder(plazza::Shell shell) {
     }
 }
 
-void plazza::NPlazza::printOrder(plazza::Shell shell)
+void plazza::NPlazza::printOrder()
 {
     clearWindow();
     print2D(tOrder, 0, -17);
     displayOrder(*this);
     printCOrder(*this);
-    setInputOrder(std::move(shell));
+    refreshWindow();
+    setInputOrder();
 }

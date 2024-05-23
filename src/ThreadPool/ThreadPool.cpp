@@ -10,7 +10,7 @@
 #include "../Logger/Logger.hpp"
 
 ThreadPool::ThreadPool(const size_t max_threads) :
-    stop(false), activeThreads(0), _maxThreads(max_threads) {
+    activeThreads(0), stop(false), _maxThreads(max_threads) {
 }
 
 ThreadPool::~ThreadPool() {

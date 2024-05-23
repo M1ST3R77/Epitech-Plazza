@@ -21,5 +21,9 @@ namespace plazza {
             void refreshWindow();
             int getInput();
             void printString(const std::string& str, int x, int y);
+            void printDim(const std::string& str, int x, int y);
+            void printBold(const std::string& str, int x, int y);
+            void printEmpty(int x, int y, int len);
+
     };
 }
