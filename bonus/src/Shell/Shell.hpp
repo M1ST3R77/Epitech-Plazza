@@ -31,5 +31,6 @@ namespace plazza {
         int _restock_time{};
         bool stop{false};
         ProcessPool _kitchens{};
+        std::mutex mutex_kitchens{};
     };
 }

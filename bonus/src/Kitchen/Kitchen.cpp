@@ -25,7 +25,7 @@ namespace plazza {
 
         while (!stop) {
             std::string msg;
-            while (!_ipcs.first.second.contentReadable()) {
+            while (!_ipcs.first.second.contentWaiting()) {
                 std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
                 if (!cooking.empty() || !orders.empty()) {
                     end_clock = now;
@@ -39,7 +39,7 @@ namespace plazza {
             _ipcs.first.second >> msg;
             end_clock = std::chrono::system_clock::now();
             if (msg == "nb_cooking")
-                _ipcs.first.first << std::to_string(orders.size() + cooking.size());
+                _ipcs.first.first << std::to_string(orders.size() + cooking.size() );
             if (msg == "status") {
                 order_mutex.lock();
                 ingredients_mutex.lock();
@@ -63,10 +63,6 @@ namespace plazza {
     Kitchen::~Kitchen() {
         Logger::log(std::string("Kitchen ") + std::to_string(getpid()) + ": Stopped", Logger::Info);
         thread_ingr.join();
-        _ipcs.first.first.destruct();
-        _ipcs.first.second.destruct();
-        _ipcs.second.first.destruct();
-        _ipcs.second.second.destruct();
     }
 
     void Kitchen::cooker(const double mult) {
