@@ -8,9 +8,14 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <iostream>
 #include <unistd.h>
+#include <cstring>
+#include <random>
+#include <sys/select.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <functional>
 
 #include "../Exceptions/Exceptions.hpp"
 
@@ -22,27 +27,32 @@ public:
     IPC &operator<<(const std::string &message);
     IPC &operator>>(std::string &message);
 
-    template<typename T>
+    template <typename T>
     IPC &operator<<(const T &message) {
-        if (write(fd[1], &message, sizeof(message)) == -1)
-            throw exceptions::ProcessError(std::string("Can't write on fd ") + std::to_string(fd[1]));
+        msgbuf_t msg = {1, {}};
+        std::memcpy(msg.mtext, &message, sizeof(T));
+        if (msgsnd(queue_id, &msg, sizeof(T), IPC_NOWAIT) == -1)
+            throw exceptions::ProcessError("Can't write on queue " + std::to_string(queue_id) + ": " + std::strerror(errno));
         return *this;
     }
 
-    template<typename T>
+    template <typename T>
     IPC &operator>>(T &message) {
-        constexpr int buf_size = sizeof(message);
-        const ssize_t len = read(fd[0], &message, buf_size);
-        if (len == 0)
-            std::cerr << "End of file on fd " << fd[0] << std::endl;
-        if (len < 0)
-            throw exceptions::ProcessError(std::string("Can't read on fd ") + std::to_string(fd[0]));
+        msgbuf_t msg;
+        if (msgrcv(queue_id, &msg, sizeof(T), 1, 0) == -1)
+            throw exceptions::ProcessError("Can't receive on queue " + std::to_string(queue_id) + ": " + std::strerror(errno));
+        std::memcpy(&message, msg.mtext, sizeof(T));
         return *this;
     }
 
     void destruct() const;
-    [[nodiscard]] bool contentReadable() const;
+    [[nodiscard]] bool contentWaiting() const;
 
 private:
-    std::vector<int> fd;
+    typedef struct msgbuf_s {
+        long mtype;
+        char mtext[1024];
+    } msgbuf_t;
+
+    int queue_id;
 };

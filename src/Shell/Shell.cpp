@@ -35,8 +35,10 @@ std::pair<IPC, IPC> &plazza::Shell::getLeastBusyKitchen() {
         else
             pid_to_erase.push_back(pid);
     }
+    mutex_kitchens.lock();
     for (const pid_t &pid : pid_to_erase)
         _kitchens.processes.erase(pid);
+    mutex_kitchens.unlock();
     auto min_cook = kitchen_cooks.begin();
     for (auto it = kitchen_cooks.begin(); it != kitchen_cooks.end(); ++it)
         if (min_cook->first > it->first)
@@ -93,8 +95,9 @@ void plazza::Shell::displayKitchenStatus() {
 
 void plazza::Shell::pizzaReceiver() {
     while (!stop) {
+        mutex_kitchens.lock();
         for (auto &ipcs : _kitchens.processes | std::views::values | std::views::values) {
-            if (!ipcs.first.contentReadable())
+            if (!ipcs.first.contentWaiting())
                 continue;
             std::string msg;
             ipcs.first >> msg;
@@ -107,6 +110,7 @@ void plazza::Shell::pizzaReceiver() {
             std::cout << string << std::endl;
             Logger::log(string, Logger::Info);
         }
+        mutex_kitchens.unlock();
     }
 }
 
