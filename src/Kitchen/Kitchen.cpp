@@ -76,11 +76,11 @@ namespace plazza {
         const std::list<PizzaIngredient> needed_ingredients = order->getNeededIngredient();
         ingredients_mutex.lock();
         for (const auto &ingr : needed_ingredients) {
-            if (nb_ingredient[ingr]) {
+            if (nb_ingredient[ingr] > 0) {
                 nb_ingredient[ingr]--;
             } else {
                 ingredients_mutex.unlock();
-                while (!nb_ingredient[ingr]);
+                while (nb_ingredient[ingr] <= 0);
                 nb_ingredient[ingr]--;
                 ingredients_mutex.lock();
             }
