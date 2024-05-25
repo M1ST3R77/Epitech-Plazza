@@ -146,7 +146,7 @@ namespace plazza {
         opts_enum opts_choose = ORDER;
         opts_enum opts_get = UNKNOWN;
 
-        Ccommand_t choose_cmd = {Margarita, M, 4, 2};
+        Ccommand_t choose_cmd = {Margarita, M, 0, 1};
         std::vector<command_t> commands;
         OType_enum order_type = TYPE;
         cOrder_enum opts_order = ORD;
