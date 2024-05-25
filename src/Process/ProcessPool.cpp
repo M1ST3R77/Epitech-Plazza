@@ -7,7 +7,10 @@
 
 #include "ProcessPool.hpp"
 
-#include <iostream>
-#include <ranges>
+#include <csignal>
 
 ProcessPool::~ProcessPool() = default;
+
+bool ProcessPool::checkProcessIsAlive(const pid_t pid) const {
+    return processes.contains(pid) && waitpid(pid, nullptr, WNOHANG) == 0 && kill(pid, 0) != -1;
+}

@@ -15,6 +15,7 @@ namespace plazza {
     class Shell {
     public:
         Shell(int ac, const std::vector<std::string_view> &av);
+        ~Shell();
 
     private:
         void parsing(int ac, const std::vector<std::string_view> &av);
@@ -31,5 +32,6 @@ namespace plazza {
         bool stop{false};
         ProcessPool _kitchens{};
         std::mutex mutex_kitchens{};
+        std::thread pizza_receiver;
     };
 }
