@@ -24,7 +24,6 @@ IPC::IPC() {
 }
 
 IPC::~IPC() {
-    destruct();
 }
 
 IPC &IPC::operator<<(const std::string &message) {
@@ -34,7 +33,7 @@ IPC &IPC::operator<<(const std::string &message) {
     std::strncpy(msg.mtext, message.c_str(), sizeof(msg.mtext));
     msg.mtext[sizeof(msg.mtext) - 1] = '\0';
 
-    if (msgsnd(queue_id, &msg, std::strlen(msg.mtext) + 1, IPC_NOWAIT) == -1)
+    if (msgsnd(queue_id, &msg, std::strlen(msg.mtext) + 1, 0) == -1)
         throw exceptions::ProcessError("Can't write on queue " + std::to_string(queue_id) + ": " + std::strerror(errno));
     return *this;
 }

@@ -18,11 +18,8 @@ ThreadPool::~ThreadPool() {
         std::unique_lock lock(queueMutex);
         stop = true;
     }
-    for (std::thread &worker : workers) {
-        if (worker.joinable()) {
-            worker.join();
-        }
-    }
+    for (std::thread &worker : workers)
+        worker.join();
     workers.clear();
 }
 
