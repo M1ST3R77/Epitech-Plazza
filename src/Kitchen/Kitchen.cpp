@@ -37,16 +37,17 @@ namespace plazza {
                 }
             }
             _ipcs.first.second >> msg;
-            end_clock = std::chrono::system_clock::now();
-            if (msg == "nb_cooking")
-                _ipcs.first.first << std::to_string(orders.size() + cooking.size() );
             if (msg == "status") {
                 order_mutex.lock();
                 ingredients_mutex.lock();
                 _ipcs.first.first << (kitchen_status_t){orders.size(), cooking.size(), thread_pool.activeThreads, nb_ingredient};
                 ingredients_mutex.unlock();
                 order_mutex.unlock();
+                continue;
             }
+            end_clock = std::chrono::system_clock::now();
+            if (msg == "nb_cooking")
+                _ipcs.first.first << std::to_string(orders.size() + cooking.size());
             if (msg == "new_pizza") {
                 _ipcs.first.first << "ready";
                 pizza_t order = {};

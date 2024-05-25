@@ -39,5 +39,7 @@ public:
         return pid;
     }
 
+    bool checkProcessIsAlive(pid_t pid) const;
+
     std::unordered_map<pid_t, std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>>> processes{};
 };

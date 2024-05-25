@@ -25,14 +25,12 @@ std::pair<IPC, IPC> &plazza::Shell::getLeastBusyKitchen() {
     std::vector<std::pair<int, std::pair<IPC, IPC> &>> kitchen_cooks;
     std::list<pid_t> pid_to_erase{};
     for (auto &[pid, ipcs] : _kitchens.processes) {
-        if (const pid_t result = waitpid(pid, nullptr, WNOHANG); result == 0) {
+        if (_kitchens.checkProcessIsAlive(pid)) {
             ipcs.first.second << "nb_cooking";
             std::string msg;
             ipcs.first.first >> msg;
             kitchen_cooks.emplace_back(str_to_int(msg), ipcs.first);
-        } else if (result == -1)
-            throw exceptions::ProcessError(std::string("Can't check if kitchen ") + std::to_string(pid) + " is alive");
-        else
+        } else
             pid_to_erase.push_back(pid);
     }
     mutex_kitchens.lock();
@@ -133,7 +131,7 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
     parsing(ac, av);
     std::string cmd;
     Parsing parse;
-    std::thread pizza_receiver([this] { return this->pizzaReceiver(); });
+    pizza_receiver = std::thread([this] { return this->pizzaReceiver(); });
 
     while (true) {
         std::cout << "> ";
@@ -163,5 +161,8 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
         parse._commands.clear();
     }
     stop = true;
+}
+
+plazza::Shell::~Shell() {
     pizza_receiver.join();
 }
