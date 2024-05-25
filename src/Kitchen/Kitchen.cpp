@@ -13,9 +13,9 @@
 #include "../ThreadPool/ThreadPool.hpp"
 
 namespace plazza {
-    Kitchen::Kitchen(const double mult, const int nb_cooks, const int restock_time, std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &ipcs) :
+    Kitchen::Kitchen(const double mult, const int nb_cooks, const int restock_time, std::pair<std::pair<IPC, IPC>, IPC> &ipcs) :
         _ipcs(ipcs), nb_ingredient() {
-        std::chrono::system_clock::time_point end_clock = std::chrono::system_clock::now();
+        end_clock = std::chrono::system_clock::now();
         for (auto &ingr : nb_ingredient)
             ingr = 5;
         ThreadPool thread_pool(std::max(static_cast<unsigned>(nb_cooks), std::thread::hardware_concurrency()));
@@ -100,15 +100,7 @@ namespace plazza {
         order_mutex.lock();
         cooking.erase(std::ranges::find(cooking, order));
         order_mutex.unlock();
-
-        order_ready_mutex.lock();
-        _ipcs.second.first << std::string("pizza ready");
-        std::string msg;
-        _ipcs.second.second >> msg;
-        if (msg != "ready")
-            throw exceptions::ProcessError("Unkown message received: " + msg);
-        _ipcs.second.first << order->pack();
-        order_ready_mutex.unlock();
+        _ipcs.second << order->pack();
     }
 
     void Kitchen::ingredient_filler(const int restock_time) {

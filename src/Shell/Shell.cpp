@@ -42,7 +42,7 @@ std::pair<IPC, IPC> &plazza::Shell::getLeastBusyKitchen() {
         if (min_cook->first > it->first)
             min_cook = it;
     if (min_cook == kitchen_cooks.end() || min_cook->first >= _nb_cooks * 2) {
-        const pid_t new_pid = _kitchens.addProcess([this](std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &ipcs) {
+        const pid_t new_pid = _kitchens.addProcess([this](std::pair<std::pair<IPC, IPC>, IPC> &ipcs) {
             return Kitchen(_mult, _nb_cooks, _restock_time, ipcs);
         });
         return _kitchens.processes[new_pid].first;
@@ -95,15 +95,10 @@ void plazza::Shell::pizzaReceiver() {
     while (!stop) {
         mutex_kitchens.lock();
         for (auto &ipcs : _kitchens.processes | std::views::values | std::views::values) {
-            if (!ipcs.first.contentWaiting())
+            if (!ipcs.contentWaiting())
                 continue;
-            std::string msg;
-            ipcs.first >> msg;
-            if (msg != "pizza ready")
-                throw exceptions::ProcessError("Unkown message received: " + msg);
-            ipcs.second << "ready";
             pizza_t order;
-            ipcs.first >> order;
+            ipcs >> order;
             std::string string = std::string("Reception : Pizza ready : ") + PizzaPacker::unpack(order);
             std::cout << string << std::endl;
             Logger::log(string, Logger::Info);

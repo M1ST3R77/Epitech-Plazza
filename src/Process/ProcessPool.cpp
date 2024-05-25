@@ -12,5 +12,5 @@
 ProcessPool::~ProcessPool() = default;
 
 bool ProcessPool::checkProcessIsAlive(const pid_t pid) const {
-    return processes.contains(pid) && kill(pid, 0) != -1;
+    return processes.contains(pid) && waitpid(pid, nullptr, WNOHANG) == 0 && kill(pid, 0) != -1;
 }
