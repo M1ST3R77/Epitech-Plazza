@@ -159,6 +159,8 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
             graphic.printStart();
         else if (graphic.opts_get == ORDER)
             graphic.printOrder();
+        else if (graphic.opts_get == STATUS)
+            graphic.printStatus(getKitchenStatus());
         else if (graphic.opts_get == HELP)
             graphic.printHelp();
         else if (graphic.opts_get == EXIT)

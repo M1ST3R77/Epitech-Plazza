@@ -7,12 +7,19 @@
 
 #include "NPlazza.hpp"
 
+#include <utility>
+
 plazza::NPlazza::NPlazza() : NCurses(), lines(LINES), cols(COLS) {}
 
-void plazza::NPlazza::print2D(const std::vector<std::string>& elem, int xpos, int ypos)
+void plazza::NPlazza::print2D(const std::vector<std::string>& elem, int xpos, int ypos, config_enum conf)
 {
     for (const auto &tmp : elem) {
-        printString(tmp, cols / 2 - tmp.length() / 2 + xpos, lines / 2 + ypos);
+        if (conf == NORMAL)
+            printString(tmp, cols / 2 - tmp.length() / 2 + xpos, lines / 2 + ypos);
+        else if (conf == BOLD)
+            printBold(tmp, cols / 2 - tmp.length() / 2 + xpos, lines / 2 + ypos);
+        else
+            printDim(tmp, cols / 2 - tmp.length() / 2 + xpos, lines / 2 + ypos);
         ypos++;
     }
 }
@@ -21,7 +28,7 @@ void plazza::NPlazza::print2D(const std::vector<std::string>& elem, int xpos, in
 static void printOpts(plazza::NPlazza grap)
 {
     int ypos = -5;
-    std::vector<std::string> opts = {"Order", "Details", "Help", "Exit"};
+    std::vector<std::string> opts = {"Order", "Status", "Help", "Exit"};
 
     for (const auto & opt : opts) {
         grap.printString(opt, grap.cols / 2 - opt.length() / 2, grap.lines / 2 + ypos);
@@ -33,10 +40,10 @@ void plazza::NPlazza::printStart()
 {
     std::unordered_map<opts_enum, int>::iterator it;
     std::unordered_map<opts_enum, int> choose_opts
-            {{ORDER, -5}, {DETAILS, 0}, {HELP, 5}, {EXIT, 10}};
+            {{ORDER, -5}, {STATUS, 0}, {HELP, 5}, {EXIT, 10}};
 
     clearWindow();
-    print2D(tPlazza, 0, -17);
+    print2D(tPlazza, 0, -17, NORMAL);
     it = choose_opts.find(opts_choose);
     printString(">", cols / 2 - 10, lines / 2 + it->second);
     printOpts(*this);
@@ -73,7 +80,7 @@ static void displayHelp(plazza::NPlazza grap)
 void plazza::NPlazza::printHelp()
 {
     clearWindow();
-    print2D(tHelp, 0, -17);
+    print2D(tHelp, 0, -17, NORMAL);
     displayHelp(*this);
     refreshWindow();
     input = getInput();
@@ -131,10 +138,10 @@ static void displayOrder(plazza::NPlazza grap)
         grap.printString(tmp.first, grap.cols / 2 + tmp.second.first, grap.lines / 2 + tmp.second.second);
 
     grap.printString(dvertical, grap.cols / 2 - 30, grap.lines / 2 - 5);
-    grap.print2D(dhorizontal, -30, -4);
-    grap.print2D(dhorizontal, -7, -4);
-    grap.print2D(dhorizontal, 9, -4);
-    grap.print2D(dhorizontal, 31, -4);
+    grap.print2D(dhorizontal, -30, -4, plazza::NORMAL);
+    grap.print2D(dhorizontal, -7, -4, plazza::NORMAL);
+    grap.print2D(dhorizontal, 9, -4, plazza::NORMAL);
+    grap.print2D(dhorizontal, 31, -4, plazza::NORMAL);
     grap.printString(dvertical, grap.cols / 2 - 30, grap.lines / 2 + 2);
 }
 
@@ -260,9 +267,97 @@ void plazza::NPlazza::setInputOrder() {
 void plazza::NPlazza::printOrder()
 {
     clearWindow();
-    print2D(tOrder, 0, -17);
+    print2D(tOrder, 0, -17, NORMAL);
     displayOrder(*this);
     printCOrder(*this);
     refreshWindow();
     setInputOrder();
+}
+
+
+void plazza::NPlazza::setInputStatus()
+{
+    input = getInput();
+
+    if (opts_status == MENU && input == '\n') {
+        status.clear();
+        nb_status = 0;
+        opts_get = UNKNOWN;
+    }
+    if (!status.empty()) {
+        if (opts_status == LEFT && input == '\n' && nb_status - 1 >= 0)
+            nb_status--;
+        if (opts_status == RIGHT && input == '\n' && nb_status + 1 < static_cast<int>(status.size()))
+            nb_status++;
+        if (input == KEY_DOWN)
+            opts_status = MENU;
+        if (input == KEY_LEFT && nb_status - 1 >= 0)
+            opts_status = LEFT;
+        if (input == KEY_RIGHT && nb_status + 1 < static_cast<int>(status.size()))
+            opts_status = RIGHT;
+    }
+}
+
+static void displayStatus(plazza::NPlazza grap)
+{
+    std::string back = "BACK";
+
+    if (grap.nb_status - 1 >= 0)
+        grap.print2D(plazza::tLrow, -80, -20, (grap.opts_status == plazza::LEFT) ? plazza::BOLD : plazza::DIM);
+    if (grap.nb_status + 1 < static_cast<int>(grap.status.size()))
+        grap.print2D(plazza::tRrow, 80, -20, (grap.opts_status == plazza::RIGHT) ? plazza::BOLD : plazza::DIM);
+    if (grap.opts_status == plazza::MENU)
+        grap.printBold(back, grap.cols / 2 - back.length() / 2, grap.lines / 2 + 15);
+    else
+        grap.printDim(back, grap.cols / 2 - back.length() / 2, grap.lines / 2 + 15);
+}
+
+static void printCStatus(plazza::NPlazza grap)
+{
+    size_t midx = grap.cols / 2;
+    size_t midy = grap.lines / 2;
+    std::unordered_map<pid_t, plazza::kitchen_status_t>::iterator it;
+
+    if (grap.status.empty())
+        grap.printString("All Kitchens are closed", midx - 11, midy);
+    else {
+        it = grap.status.begin();
+        std::advance(it, grap.nb_status);
+        std::string str = "Kitchen " + std::to_string(it->first);
+
+        grap.printString(str, midx - 24, midy - 3);
+
+        str = std::to_string(it->second.orders_waiting) + " orders waiting to be cooked";
+        grap.printString(str, midx - 33, midy);
+
+        str = std::to_string(it->second.orders_being_cooked) + " orders being cooked by";
+        grap.printString(str, midx - 30, midy + 3);
+
+        str = std::to_string(it->second.nb_cooks) + " cookers working";
+        grap.printString(str, midx - 26, midy + 6);
+
+        str = "Here is the left ingredients :";
+        grap.printString(str, midx + 5, midy - 3);
+
+        for (size_t i = 0; i < plazza::NbIngredients; i++) {
+            str = "   - " + std::to_string(it->second.ingredients[i]) + ' ' +
+                  plazza::ingredients_name.at(static_cast<plazza::PizzaIngredient>(i)) + " left";
+            grap.printString(str, midx + 5, midy - 2 + i);
+        }
+
+    }
+}
+
+void plazza::NPlazza::printStatus(std::unordered_map<pid_t, kitchen_status_t> kitchens_stat)
+{
+    clearWindow();
+    print2D(tStatus, 0, -20, NORMAL);
+    if (status.empty()) {
+        status = std::move(kitchens_stat);
+        nb_status = 0;
+    }
+    displayStatus(*this);
+    printCStatus(*this);
+    refreshWindow();
+    setInputStatus();
 }
