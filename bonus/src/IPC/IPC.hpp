@@ -31,7 +31,7 @@ public:
     IPC &operator<<(const T &message) {
         msgbuf_t msg = {1, {}};
         std::memcpy(msg.mtext, &message, sizeof(T));
-        if (msgsnd(queue_id, &msg, sizeof(T), IPC_NOWAIT) == -1)
+        if (msgsnd(queue_id, &msg, sizeof(T), 0) == -1)
             throw exceptions::ProcessError("Can't write on queue " + std::to_string(queue_id) + ": " + std::strerror(errno));
         return *this;
     }

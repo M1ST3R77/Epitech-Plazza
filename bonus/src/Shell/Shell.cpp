@@ -17,14 +17,12 @@ std::pair<IPC, IPC> &plazza::Shell::getLeastBusyKitchen() {
     std::vector<std::pair<int, std::pair<IPC, IPC> &>> kitchen_cooks;
     std::list<pid_t> pid_to_erase{};
     for (auto &[pid, ipcs] : _kitchens.processes) {
-        if (const pid_t result = waitpid(pid, nullptr, WNOHANG); result == 0) {
+        if (_kitchens.checkProcessIsAlive(pid)) {
             ipcs.first.second << "nb_cooking";
             std::string msg;
             ipcs.first.first >> msg;
             kitchen_cooks.emplace_back(str_to_int(msg), ipcs.first);
-        } else if (result == -1)
-            throw exceptions::ProcessError(std::string("Can't check if kitchen ") + std::to_string(pid) + " is alive");
-        else
+        } else
             pid_to_erase.push_back(pid);
     }
     mutex_kitchens.lock();
@@ -36,7 +34,7 @@ std::pair<IPC, IPC> &plazza::Shell::getLeastBusyKitchen() {
         if (min_cook->first > it->first)
             min_cook = it;
     if (min_cook == kitchen_cooks.end() || min_cook->first >= _nb_cooks * 2) {
-        const pid_t new_pid = _kitchens.addProcess([this](std::pair<std::pair<IPC, IPC>, std::pair<IPC, IPC>> &ipcs) {
+        const pid_t new_pid = _kitchens.addProcess([this](std::pair<std::pair<IPC, IPC>, IPC> &ipcs) {
             return Kitchen(_mult, _nb_cooks, _restock_time, ipcs);
         });
         return _kitchens.processes[new_pid].first;
@@ -67,23 +65,6 @@ std::unordered_map<pid_t, plazza::kitchen_status_t> plazza::Shell::getKitchenSta
     return kitchen_status;
 }
 
-void plazza::Shell::displayKitchenStatus() {
-    const std::unordered_map<pid_t, kitchen_status_t> kitchen_status = getKitchenStatus();
-
-    if (kitchen_status.empty())
-        std::cout << "All Kitchens are closed\n";
-    for (const auto &[pid, status] : kitchen_status) {
-        std::string str = "Kitchen ";
-        str += std::to_string(pid) + ":\n" + std::to_string(status.orders_waiting) + " orders waiting to be cooked,\n" +
-               std::to_string(status.orders_being_cooked) + " orders being cooked by\n" +
-               std::to_string(status.nb_cooks) + " cookers working\nHere is the left ingredients :\n";
-        for (size_t i = 0; i < NbIngredients; i++)
-            str += " - " + std::to_string(status.ingredients[i]) + ' ' + ingredients_name.at(static_cast<PizzaIngredient>(i)) + " left\n";
-        str += '\n';
-        std::cout << str;
-    }
-}
-
 void plazza::Shell::parsing(const int ac, const std::vector<std::string_view> &av) {
     if (ac != 4)
         throw exceptions::ParamsError(ac < 4 ? "Not enough parameters" : "Too many parameters");
@@ -105,15 +86,10 @@ void plazza::Shell::pizzaReceiver(NPlazza grap) {
     while (!stop) {
         mutex_kitchens.lock();
         for (auto &ipcs : _kitchens.processes | std::views::values | std::views::values) {
-            if (!ipcs.first.contentWaiting())
+            if (!ipcs.contentWaiting())
                 continue;
-            std::string msg;
-            ipcs.first >> msg;
-            if (msg != "pizza ready")
-                throw exceptions::ProcessError("Unkown message received: " + msg);
-            ipcs.second << "ready";
             pizza_t order;
-            ipcs.first >> order;
+            ipcs >> order;
             std::string pizza = PizzaPacker::unpack(order);
             std::string string = std::string("Reception : Pizza ready : ") + PizzaPacker::unpack(order);
             Logger::log(std::string("Reception : Pizza ready : ") + pizza, Logger::Info);
@@ -152,7 +128,7 @@ void plazza::Shell::sendPizza(plazza::NPlazza &grap)
 plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
     parsing(ac, av);
     NPlazza graphic;
-    std::thread pizza_receiver([this, &graphic] { return this->pizzaReceiver(graphic); });
+    pizza_receiver = std::thread([this, &graphic] { return this->pizzaReceiver(graphic); });
 
     while (graphic.input != 27) {
         if (graphic.opts_get == UNKNOWN)
@@ -171,5 +147,8 @@ plazza::Shell::Shell(const int ac, const std::vector<std::string_view> &av) {
         }
     }
     stop = true;
+}
+
+plazza::Shell::~Shell() {
     pizza_receiver.join();
 }
